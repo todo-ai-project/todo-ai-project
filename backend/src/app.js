@@ -41,7 +41,7 @@ app.use((err, req, res, next) => {
 });
 
 // 9. 서버 실행 설정
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
 
 const server = app.listen(PORT, () => {
     console.log('-----------------------------------------');
