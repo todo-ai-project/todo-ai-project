@@ -1,8 +1,8 @@
-//frontend>src>pages>MakeTodo.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import AnalyzePage from "./AnalyzePage";
+import BackButton from '../../components/BackButton';
 
 function MakeTodo() {
   const navigate = useNavigate();
@@ -22,11 +22,9 @@ function MakeTodo() {
     setResult(null);
 
     try {
-      // 1. 목표 먼저 저장
       const goalRes = await api.post('/goals', { content: goal });
       const goalID = goalRes.data.id;
 
-      // 2. 그 목표 ID로 AI 할 일 생성
       const response = await api.post('/todos/generate', {
         userGoal: goal,
         goalID
@@ -74,13 +72,17 @@ function MakeTodo() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '0 20px'
+      padding: '0 20px',
+      position: 'relative'
     }}>
+      <div style={{ position: 'absolute', top: '32px', left: '6%' }}>
+        <BackButton style={{ marginBottom: 0 }} />
+      </div>
       <h1 style={{ fontSize: '36px', marginBottom: '10px', textAlign: 'center' }}>
-        어떤 목표를 이루고 싶으신가요?
+        요즘 이루고 싶은 목표가 있으신가요?
       </h1>
       <p style={{ fontSize: '16px', color: 'var(--text-muted)', marginBottom: '40px', textAlign: 'center' }}>
-        AI가 당신의 목표를 분석해 최적의 할 일 리스트를 만들어드립니다.
+        막연해도 괜찮아요. 한 줄만 적어주시면, 실행 가능한 계획으로 나눠드릴게요.
       </p>
 
       <div className="card" style={{
@@ -98,7 +100,7 @@ function MakeTodo() {
           style={{ flex: 1, border: 'none', boxShadow: 'none', fontSize: '16px' }}
           onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
         />
-        <button onClick={handleSubmit} className="btn btn-purple">
+        <button onClick={handleSubmit} className="btn btn-primary">
           분석 시작
         </button>
       </div>

@@ -25,7 +25,7 @@ exports.getTodos = async (req, res) => {
   }
 };
 
-// 2. 개별 할 일 생성 (userID는 토큰에서 가져옴, 클라이언트가 보내도 무시)
+// 2. 개별 할 일 생성
 exports.createTodo = async (req, res) => {
   try {
     const { content, goalID, order, targetDate } = req.body;
@@ -48,7 +48,7 @@ exports.createTodo = async (req, res) => {
   }
 };
 
-// 3. 할 일 수정 (완료 체크, 텍스트/날짜 수정) — 새로 추가
+// 3. 할 일 수정 (완료 체크, 텍스트/날짜 수정)
 exports.updateTodo = async (req, res) => {
   try {
     const { id } = req.params;
@@ -60,7 +60,6 @@ exports.updateTodo = async (req, res) => {
     if (!todoDoc.exists) {
       return res.status(404).json({ success: false, message: "할 일을 찾을 수 없습니다." });
     }
-    // 본인 소유 데이터인지 확인
     if (todoDoc.data().userID !== req.userID) {
       return res.status(403).json({ success: false, message: "권한이 없습니다." });
     }
@@ -68,4 +67,36 @@ exports.updateTodo = async (req, res) => {
     const updateData = {};
     if (content !== undefined) updateData.content = content;
     if (targetDate !== undefined) updateData.targetDate = targetDate;
-    if (isDone !==
+    if (isDone !== undefined) updateData.isDone = isDone;
+
+    await todoRef.update(updateData);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+// 4. 할 일 삭제
+exports.deleteTodo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ success: false, message: "ID가 필요합니다." });
+
+    const todoRef = db.collection('todos').doc(id);
+    const todoDoc = await todoRef.get();
+
+    if (!todoDoc.exists) {
+      return res.status(404).json({ success: false, message: "할 일을 찾을 수 없습니다." });
+    }
+    if (todoDoc.data().userID !== req.userID) {
+      return res.status(403).json({ success: false, message: "권한이 없습니다." });
+    }
+
+    await todoRef.delete();
+    console.log(`🗑️ [Firestore] 삭제 성공: ${id}`);
+    return res.status(200).json({ success: true, message: "성공적으로 삭제되었습니다." });
+  } catch (error) {
+    console.error("❌ [DELETE ERROR]", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};

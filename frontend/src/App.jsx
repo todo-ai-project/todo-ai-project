@@ -7,6 +7,7 @@ import TodoList from "./pages/TodoList/TodoList";
 import MakeTodo from "./pages/MakeTodo/MakeTodo";
 import LoginPage from "./pages/Login/LoginPage";
 import MyPage from "./pages/MyPage/MyPage";
+import Layout from "./components/Layout";
 
 function App() {
   const [user, setUser] = useState(undefined); // undefined: 확인중, null: 비로그인
@@ -20,7 +21,7 @@ function App() {
     return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>로딩중...</div>;
   }
 
-  const PrivateRoute = ({ children }) => (user ? children : <Navigate to="/login" replace />);
+  const PrivateRoute = ({ children }) => (user ? <Layout>{children}</Layout> : <Navigate to="/login" replace />);
 
   return (
     <BrowserRouter>

@@ -93,13 +93,13 @@ function LoginPage() {
 
         {error && <p style={{ color: 'var(--danger-text)', fontSize: '13px', margin: 0, fontWeight: 600 }}>{error}</p>}
 
-        <button onClick={handleSubmit} disabled={loading} className="btn btn-coral" style={{ marginTop: '4px' }}>
+        <button onClick={handleSubmit} disabled={loading} className="btn btn-primary" style={{ marginTop: '4px' }}>
           {loading ? '처리중...' : (mode === 'login' ? '로그인' : '회원가입')}
         </button>
 
         <button
           onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
-          className="btn btn-ghost"
+          style={{ color: 'var(--primary-strong)', fontWeight: 700, cursor: 'pointer' }}
         >
           {mode === 'login' ? '계정이 없으신가요? 회원가입' : '이미 계정이 있으신가요? 로그인'}
         </button>

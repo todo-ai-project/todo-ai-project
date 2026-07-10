@@ -11,6 +11,7 @@ import {
 import { auth } from '../../firebaseConfig';
 import { toFakeEmail } from '../../utils/authEmail';
 import api from '../../api';
+import BackButton from '../../components/BackButton';
 
 function MyPage() {
   const navigate = useNavigate();
@@ -88,53 +89,63 @@ function MyPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', padding: '48px 8%', display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '720px', margin: '0 auto' }}>
-      <button onClick={() => navigate('/')} className="btn btn-ghost" style={{ alignSelf: 'flex-start' }}>
-        ← 홈으로
-      </button>
+    <div style={{ minHeight: '100vh', width: '100%', padding: '40px 6%', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+        <BackButton />
 
-      <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>닉네임</p>
-          <h2>{user?.displayName || '알 수 없음'}</h2>
+        <p style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-h)', margin: '0 0 22px' }}>마이페이지</p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1.4fr', gap: '16px', alignItems: 'start' }}>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>닉네임</p>
+                <h2>{user?.displayName || '알 수 없음'}</h2>
+              </div>
+              <button onClick={handleLogout} className="btn btn-ghost btn-sm">로그아웃</button>
+            </div>
+
+            <div className="card" style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ flex: 1 }}>
+                <span className="badge badge-muted">전체 할 일</span>
+                <h2 style={{ marginTop: '10px', fontSize: '28px' }}>{stats.total}개</h2>
+              </div>
+              <div style={{ flex: 1 }}>
+                <span className="badge badge-primary">완료</span>
+                <h2 style={{ marginTop: '10px', fontSize: '28px' }}>{stats.completed}개</h2>
+              </div>
+            </div>
+
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <p style={{ fontWeight: 700, color: 'var(--danger-text)' }}>계정 삭제</p>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>삭제 전 현재 비밀번호를 오른쪽 비밀번호 변경 칸에 입력해주세요.</p>
+              <button onClick={handleDeleteAccount} className="btn btn-danger" style={{ alignSelf: 'flex-start' }}>계정 삭제</button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {(message || error) && (
+              <p style={{ color: error ? 'var(--danger-text)' : 'var(--green-text)', fontSize: '14px', fontWeight: 600, margin: 0 }}>
+                {error || message}
+              </p>
+            )}
+
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <p style={{ fontWeight: 700 }}>닉네임 변경</p>
+              <input className="field" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+              <button onClick={handleNicknameChange} className="btn btn-primary btn-block">닉네임 저장</button>
+            </div>
+
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <p style={{ fontWeight: 700 }}>비밀번호 변경</p>
+              <input className="field" type="password" placeholder="현재 비밀번호" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              <input className="field" type="password" placeholder="새 비밀번호" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <button onClick={handlePasswordChange} className="btn btn-primary btn-block">비밀번호 변경</button>
+            </div>
+          </div>
+
         </div>
-        <button onClick={handleLogout} className="btn btn-ghost">로그아웃</button>
-      </div>
-
-      <div className="card" style={{ display: 'flex', gap: '16px' }}>
-        <div style={{ flex: 1 }}>
-          <span className="badge badge-coral">전체 할 일</span>
-          <h2 style={{ marginTop: '10px', fontSize: '28px' }}>{stats.total}개</h2>
-        </div>
-        <div style={{ flex: 1 }}>
-          <span className="badge badge-green">완료</span>
-          <h2 style={{ marginTop: '10px', fontSize: '28px' }}>{stats.completed}개</h2>
-        </div>
-      </div>
-
-      {(message || error) && (
-        <p style={{ color: error ? 'var(--danger-text)' : 'var(--green-text)', fontSize: '14px', fontWeight: 600 }}>
-          {error || message}
-        </p>
-      )}
-
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <p style={{ fontWeight: 700 }}>닉네임 변경</p>
-        <input className="field" value={nickname} onChange={(e) => setNickname(e.target.value)} />
-        <button onClick={handleNicknameChange} className="btn btn-purple">닉네임 저장</button>
-      </div>
-
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <p style={{ fontWeight: 700 }}>비밀번호 변경</p>
-        <input className="field" type="password" placeholder="현재 비밀번호" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-        <input className="field" type="password" placeholder="새 비밀번호" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-        <button onClick={handlePasswordChange} className="btn btn-purple">비밀번호 변경</button>
-      </div>
-
-      <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <p style={{ fontWeight: 700, color: 'var(--danger-text)' }}>계정 삭제</p>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>삭제 전 현재 비밀번호를 위 칸에 입력해주세요.</p>
-        <button onClick={handleDeleteAccount} className="btn btn-danger">계정 삭제</button>
       </div>
     </div>
   );

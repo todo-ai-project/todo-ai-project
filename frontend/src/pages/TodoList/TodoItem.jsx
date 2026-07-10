@@ -28,7 +28,7 @@ function TodoItem({ id, text, targetDate, dDay, completed, highlighted, onDelete
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: highlighted ? '0 0 0 2px var(--purple-strong)' : '0 0 0 1px var(--border)',
+        boxShadow: highlighted ? '0 0 0 2px var(--accent)' : '0 0 0 1px var(--border)',
         opacity: completed ? 0.55 : 1,
         transition: 'all 0.2s ease'
       }}
@@ -41,7 +41,7 @@ function TodoItem({ id, text, targetDate, dDay, completed, highlighted, onDelete
             height: '24px',
             borderRadius: '50%',
             border: completed ? 'none' : '2px solid var(--border)',
-            backgroundColor: completed ? 'var(--green)' : 'var(--surface)',
+            backgroundColor: completed ? 'var(--accent)' : 'var(--surface)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -89,7 +89,10 @@ function TodoItem({ id, text, targetDate, dDay, completed, highlighted, onDelete
           )}
 
           {!isEditing && (
-            <span className={dDay === 'D-Day' ? 'badge badge-coral' : 'badge badge-purple'}>
+            <span
+              className="badge"
+              style={dDay === 'D-Day' ? { background: 'var(--danger-soft)', color: 'var(--danger-text)' } : undefined}
+            >
               {dDay}
             </span>
           )}

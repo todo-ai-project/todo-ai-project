@@ -1,28 +1,41 @@
 :root {
-  --page-bg: #FFF9F0;
+  --page-bg: #F7F5F0;
   --surface: #ffffff;
-  --surface-soft: #FFF3E4;
+  --surface-soft: #EFEBE2;
 
-  --text: #4A1B0C;
-  --text-h: #1C1C1A;
-  --text-muted: #A99C8F;
+  --text: #3B352C;
+  --text-h: #201C17;
+  --text-muted: #9C9284;
 
-  --coral: #F0997B;
-  --coral-strong: #D85A30;
-  --coral-text: #994B1D;
+  --border: #E2DCCF;
 
-  --green: #97C459;
-  --green-strong: #639922;
-  --green-text: #3B6D11;
+  --primary: #4B5D53;
+  --primary-strong: #303E36;
+  --primary-soft: #E6EAE6;
+  --primary-text: #34423A;
 
-  --purple: #AFA9EC;
-  --purple-strong: #7F77DD;
-  --purple-text: #534AB7;
+  --clay: #BE8567;
+  --clay-strong: #8C5C43;
+  --clay-soft: #F3E7DE;
+  --clay-text: #7A4C34;
 
-  --danger: #E24B4A;
-  --danger-text: #A32D2D;
+  --slate: #7D93A8;
+  --slate-strong: #4F6478;
+  --slate-soft: #E7ECF0;
+  --slate-text: #445A6E;
 
-  --border: #F0E4D3;
+  --sage: #93A87E;
+  --sage-strong: #647550;
+  --sage-soft: #ECF0E3;
+  --sage-text: #4E5C3B;
+
+  --danger: #BD5B52;
+  --danger-strong: #8C3B34;
+  --danger-text: #8C3B34;
+  --danger-soft: #F8EAE7;
+
+  --accent: var(--primary-strong);
+
   --radius: 16px;
   --radius-sm: 10px;
 
@@ -34,11 +47,24 @@
   -webkit-font-smoothing: antialiased;
 }
 
-* { box-sizing: border-box; }
-body { margin: 0; }
+* {
+  box-sizing: border-box;
+}
 
-h1, h2, h3 { font-family: var(--sans); font-weight: 800; color: var(--text-h); margin: 0; }
-p { margin: 0; }
+body {
+  margin: 0;
+}
+
+h1, h2, h3 {
+  font-family: var(--sans);
+  font-weight: 800;
+  color: var(--text-h);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
 
 .card {
   background: var(--surface-soft);
@@ -50,19 +76,41 @@ p { margin: 0; }
 .btn {
   border: none;
   border-radius: 999px;
-  padding: 14px 24px;
-  font-size: 15px;
+  padding: 13px 22px;
+  font-size: 14.5px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.1s ease;
 }
-.btn:active { transform: scale(0.97); }
 
-.btn-coral { background: var(--coral); color: #fff; }
-.btn-green { background: var(--green); color: #fff; }
-.btn-purple { background: var(--purple-strong); color: #fff; }
-.btn-ghost { background: var(--surface-soft); color: var(--text); }
-.btn-danger { background: #fff; color: var(--danger-text); box-shadow: 0 0 0 1.5px #F7C1C1 inset; }
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.btn-primary {
+  background: var(--primary-strong);
+  color: #fff;
+}
+
+.btn-ghost {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.btn-danger {
+  background: #fff;
+  color: var(--danger-text);
+  box-shadow: 0 0 0 1.5px #E3B6AE inset;
+}
 
 .field {
   width: 100%;
@@ -73,15 +121,86 @@ p { margin: 0; }
   outline: none;
   background: var(--surface);
 }
-.field:focus { border-color: var(--purple-strong); }
 
+.field:focus {
+  border-color: var(--primary-strong);
+}
+
+select.field, select {
+  font-family: var(--sans);
+}
+
+select.field option, select option {
+  font-family: var(--sans);
+  color: var(--text-h);
+}
+
+/* 기본 뱃지 — 별도 색 클래스를 안 붙여도 항상 색이 들어가도록 */
 .badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
+  background: var(--border);
+  color: var(--text-muted);
 }
-.badge-coral { background: #FAECE7; color: var(--coral-text); }
-.badge-green { background: #EAF3DE; color: var(--green-text); }
-.badge-purple { background: #EEEDFE; color: var(--purple-text); }
+
+.badge-muted {
+  background: var(--border);
+  color: var(--text-muted);
+}
+
+.badge-primary {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+}
+
+.badge-clay {
+  background: var(--clay-soft);
+  color: var(--clay-text);
+}
+
+.badge-slate {
+  background: var(--slate-soft);
+  color: var(--slate-text);
+}
+
+.badge-sage {
+  background: var(--sage-soft);
+  color: var(--sage-text);
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+}
+
+.auth-left {
+  flex: 1;
+  background: var(--primary-strong);
+  color: #fff;
+  padding: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--page-bg);
+}
+
+@media (max-width: 860px) {
+  .auth-page {
+    flex-direction: column;
+  }
+  .auth-left {
+    flex: none;
+    padding: 32px 24px;
+  }
+}
