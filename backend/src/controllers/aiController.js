@@ -2,7 +2,7 @@ const model = require('../config/gemini'); // ⭐️ 중괄호 없이 정확히 
 const { db } = require('../config/firebase');
 
 exports.generateTodoMate = async (req, res) => {
-    const { userGoal, goalID, userID } = req.body;
+    const { userGoal, goalID } = req.body;
 
     try {
         if (!userGoal) {
@@ -67,7 +67,7 @@ exports.generateTodoMate = async (req, res) => {
                         content: taskContent,
                         category: cat,
                         goalID: goalID || "ai_generated_goal",
-                        userID: userID || "test_user_1",
+                        userID: req.userID,
                         isDone: false,
                         order: index,
                         createdAt: new Date()

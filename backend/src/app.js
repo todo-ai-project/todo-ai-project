@@ -9,25 +9,26 @@ dotenv.config();
 // 2. Firebase 연결
 require('./config/firebase');
 
-// 3. 라우터 불러오기
-const todoRouter = require('./routes/todo'); 
-const goalRouter = require('./routes/goal'); 
+// 3. 라우터 및 미들웨어 불러오기
+const todoRouter = require('./routes/todo');
+const goalRouter = require('./routes/goal');
+const authMiddleware = require('./middleware/authMiddleware');
 
 const app = express();
 
 // 4. 미들웨어 설정
 // 반드시 라우팅 설정보다 위에 있어야 합니다.
-app.use(cors()); 
-app.use(express.json()); 
+app.use(cors());
+app.use(express.json());
 
 // 5. 기본 접속 테스트
 app.get('/', (req, res) => {
     res.status(200).send('🚀 AI 투두 메이트 서버가 가동 중입니다!');
 });
 
-// 6. API 라우팅
-app.use('/api/todos', todoRouter);
-app.use('/api/goals', goalRouter); 
+// 6. API 라우팅 (인증 필요)
+app.use('/api/todos', authMiddleware, todoRouter);
+app.use('/api/goals', authMiddleware, goalRouter);
 
 // 7. 404 경로 처리
 app.use((req, res) => {

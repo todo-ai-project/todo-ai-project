@@ -4,133 +4,105 @@ import { useState } from 'react';
 function TodoItem({ id, text, targetDate, dDay, completed, highlighted, onDelete, onUpdate, onToggle }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(text);
-  const [editDate, setEditDate] = useState(targetDate); // 수정용 날짜 상태
+  const [editDate, setEditDate] = useState(targetDate);
 
   const handleDeleteClick = () => {
-    if (window.confirm('삭제하시겠습니까?')) {
-      onDelete(id);
-    }
+    if (window.confirm('삭제하시겠습니까?')) onDelete(id);
   };
 
-  const handleEditClick = () => {
-    if (window.confirm('수정하시겠습니까?')) {
-      setIsEditing(true);
-    }
-  };
+  const handleEditClick = () => setIsEditing(true);
 
   const handleSave = () => {
-    // 텍스트와 날짜를 함께 부모 컴포넌트로 전달
     onUpdate(id, editValue, editDate);
     setIsEditing(false);
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleSave();
-    }
+    if (e.key === 'Enter') handleSave();
   };
 
   return (
-    <div style={{
-      display: 'flex',            
-      justifyContent: 'space-between', 
-      alignItems: 'center',      
-      padding: '20px',
-      border: highlighted ? '2px solid #406eff' : '1px solid #eee', 
-      borderRadius: '12px',       
-      backgroundColor: 'white',   
-      // 완료 시 전체적인 투명도를 주어 어둡게 보이게 함
-      opacity: completed ? 0.6 : 1, 
-      transition: 'all 0.2s ease'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', flexGrow: 1 }}>
-        
-        {/* ⭐️ 체크박스 (클릭 시 완료 토글) */}
-        <div 
-          onClick={() => onToggle(id)} // 부모의 토글 함수 호출
-          style={{ 
-            width: '24px', 
-            height: '24px', 
-            border: completed ? '2px solid #406eff' : '2px solid #eee', 
+    <div
+      className="card"
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: highlighted ? '0 0 0 2px var(--purple-strong)' : '0 0 0 1px var(--border)',
+        opacity: completed ? 0.55 : 1,
+        transition: 'all 0.2s ease'
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px', flexGrow: 1 }}>
+        <div
+          onClick={() => onToggle(id)}
+          style={{
+            width: '24px',
+            height: '24px',
             borderRadius: '50%',
-            backgroundColor: completed ? '#406eff' : 'white', 
+            border: completed ? 'none' : '2px solid var(--border)',
+            backgroundColor: completed ? 'var(--green)' : 'var(--surface)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white', 
-            fontSize: '14px',
+            color: 'white',
+            fontSize: '13px',
             fontWeight: 'bold',
             marginTop: '2px',
             flexShrink: 0,
-            cursor: 'pointer', // 클릭 가능 표시
+            cursor: 'pointer',
             transition: 'all 0.2s'
           }}
         >
-          {completed && '✓'} 
+          {completed && '✓'}
         </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', width: '100%', textAlign: 'left' }}>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '10px', width: '100%', textAlign: 'left' }}>
           {isEditing ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-              {/* 텍스트 수정 */}
-              <input 
+              <input
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 autoFocus
-                style={{
-                  fontSize: '16px',
-                  padding: '6px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  width: '90%',
-                  outline: 'none'
-                }}
+                className="field"
+                style={{ fontSize: '15px', padding: '8px 12px' }}
               />
-              {/* ⭐️ 날짜 수정 추가 */}
-              <input 
+              <input
                 type="date"
                 value={editDate}
                 onChange={(e) => setEditDate(e.target.value)}
-                style={{
-                  fontSize: '13px',
-                  padding: '4px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  width: '150px',
-                  color: '#666'
-                }}
+                className="field"
+                style={{ fontSize: '13px', padding: '6px 12px', width: '160px', color: 'var(--text-muted)' }}
               />
             </div>
           ) : (
-            <p style={{ 
-              margin: 0, 
-              fontSize: '16px', 
-              fontWeight: highlighted ? '600' : '500', 
-              color: completed ? '#999' : '#333', 
-              // ⭐️ 완료 시 취소선 긋기
-              textDecoration: completed ? 'line-through' : 'none' 
+            <p style={{
+              margin: 0,
+              fontSize: '15px',
+              fontWeight: highlighted ? 700 : 500,
+              color: completed ? 'var(--text-muted)' : 'var(--text-h)',
+              textDecoration: completed ? 'line-through' : 'none'
             }}>
               {text}
             </p>
           )}
-          
-          {/* 디데이 표시 (수정 중이 아닐 때만 표시) */}
+
           {!isEditing && (
-            <p style={{ margin: 0, fontSize: '13px', color: '#888', fontWeight: '500' }}>
+            <span className={dDay === 'D-Day' ? 'badge badge-coral' : 'badge badge-purple'}>
               {dDay}
-            </p>
+            </span>
           )}
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '12px', fontSize: '18px', color: '#ccc', flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
         {isEditing ? (
-          <button onClick={handleSave} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#406eff' }}>💾</button>
+          <button onClick={handleSave} className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '13px' }}>저장</button>
         ) : (
-          <button onClick={handleEditClick} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit' }}>✏️</button>
+          <button onClick={handleEditClick} className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '13px' }}>수정</button>
         )}
-        <button onClick={handleDeleteClick} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'inherit' }}>🗑</button>
+        <button onClick={handleDeleteClick} className="btn btn-danger" style={{ padding: '8px 14px', fontSize: '13px' }}>삭제</button>
       </div>
     </div>
   );

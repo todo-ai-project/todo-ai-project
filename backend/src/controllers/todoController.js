@@ -1,18 +1,20 @@
-//backend>src>controllers>todoController.js
 const { db } = require('../config/firebase');
 
-// 1. 모든 할 일 목록 가져오기 (추가됨)
+// 1. 내 할 일 목록만 가져오기
 exports.getTodos = async (req, res) => {
   try {
-    // 생성일자(createdAt) 기준 내림차순 정렬하여 가져오기
-    const snapshot = await db.collection('todos').orderBy('createdAt', 'desc').get();
-    
+    const snapshot = await db.collection('todos')
+      .where('userID', '==', req.userID)
+      .orderBy('createdAt', 'desc')
+      .get();
+
     const todos = snapshot.docs.map(doc => ({
-      id: doc.id, // Firestore의 문서 ID를 id로 할당 (삭제 시 필요)
-      text: doc.data().content, // 프론트엔드 변수명에 맞춤
+      id: doc.id,
+      text: doc.data().content,
       targetDate: doc.data().targetDate || "",
       completed: doc.data().isDone || false,
       category: doc.data().category,
+      goalID: doc.data().goalID,
       ...doc.data()
     }));
 
@@ -23,10 +25,10 @@ exports.getTodos = async (req, res) => {
   }
 };
 
-// 2. 개별 할 일 생성
+// 2. 개별 할 일 생성 (userID는 토큰에서 가져옴, 클라이언트가 보내도 무시)
 exports.createTodo = async (req, res) => {
   try {
-    const { content, goalID, order, userID, targetDate } = req.body;
+    const { content, goalID, order, targetDate } = req.body;
     if (!content) return res.status(400).json({ success: false, message: "내용 누락" });
 
     const newTodo = {
@@ -34,7 +36,7 @@ exports.createTodo = async (req, res) => {
       goalID: goalID || "default",
       order: order || 0,
       isDone: false,
-      userID: userID || "anon_user_789",
+      userID: req.userID,
       targetDate: targetDate || "",
       createdAt: new Date()
     };
@@ -46,25 +48,24 @@ exports.createTodo = async (req, res) => {
   }
 };
 
-// 3. 할 일 삭제 (실시간 DB 반영용)
-exports.deleteTodo = async (req, res) => {
+// 3. 할 일 수정 (완료 체크, 텍스트/날짜 수정) — 새로 추가
+exports.updateTodo = async (req, res) => {
   try {
     const { id } = req.params;
+    const { content, targetDate, isDone } = req.body;
 
-    if (!id) {
-      return res.status(400).json({ success: false, message: "ID가 필요합니다." });
+    const todoRef = db.collection('todos').doc(id);
+    const todoDoc = await todoRef.get();
+
+    if (!todoDoc.exists) {
+      return res.status(404).json({ success: false, message: "할 일을 찾을 수 없습니다." });
+    }
+    // 본인 소유 데이터인지 확인
+    if (todoDoc.data().userID !== req.userID) {
+      return res.status(403).json({ success: false, message: "권한이 없습니다." });
     }
 
-    // Firestore에서 문서 삭제
-    await db.collection('todos').doc(id).delete();
-    console.log(`🗑️ [Firestore] 삭제 성공: ${id}`);
-
-    return res.status(200).json({
-      success: true,
-      message: "성공적으로 삭제되었습니다."
-    });
-  } catch (error) {
-    console.error("❌ [DELETE ERROR]", error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-};
+    const updateData = {};
+    if (content !== undefined) updateData.content = content;
+    if (targetDate !== undefined) updateData.targetDate = targetDate;
+    if (isDone !==

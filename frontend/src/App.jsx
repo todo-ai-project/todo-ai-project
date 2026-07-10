@@ -1,17 +1,35 @@
-//frontend>src>App.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebaseConfig";
 import Home from "./pages/Home/Home";
 import TodoList from "./pages/TodoList/TodoList";
 import MakeTodo from "./pages/MakeTodo/MakeTodo";
+import LoginPage from "./pages/Login/LoginPage";
+import MyPage from "./pages/MyPage/MyPage";
 
 function App() {
+  const [user, setUser] = useState(undefined); // undefined: 확인중, null: 비로그인
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  if (user === undefined) {
+    return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>로딩중...</div>;
+  }
+
+  const PrivateRoute = ({ children }) => (user ? children : <Navigate to="/login" replace />);
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* 여기가 핵심! 대문(/)에는 반드시 Home이 들어가야 합니다 */}
-        <Route path="/" element={<Home />} />
-        <Route path="/make" element={<MakeTodo />} />
-        <Route path="/list" element={<TodoList />} />
+        <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+        <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+        <Route path="/make" element={<PrivateRoute><MakeTodo /></PrivateRoute>} />
+        <Route path="/list" element={<PrivateRoute><TodoList /></PrivateRoute>} />
+        <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   );
