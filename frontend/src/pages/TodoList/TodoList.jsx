@@ -4,32 +4,40 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import TodoItem from './TodoItem';
 
+const UNSORTED_GOAL_ID = 'default';
+
 function TodoList() {
   const navigate = useNavigate();
 
   const [todos, setTodos] = useState([]);
+  const [goals, setGoals] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [dueDate, setDueDate] = useState('');
 
   useEffect(() => {
-    const fetchTodos = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get('/todos');
-        if (response.data.success) {
-          const mappedTodos = response.data.data.map(item => ({
+        const [todosRes, goalsRes] = await Promise.all([api.get('/todos'), api.get('/goals')]);
+
+        if (todosRes.data.success) {
+          const mappedTodos = todosRes.data.data.map(item => ({
             id: item.id,
             text: item.content,
             targetDate: item.targetDate || "",
             completed: item.isDone || false,
+            goalID: item.goalID || UNSORTED_GOAL_ID,
             highlighted: false
           }));
           setTodos(mappedTodos);
+        }
+        if (goalsRes.data.success) {
+          setGoals(goalsRes.data.data);
         }
       } catch (error) {
         console.error("데이터 불러오기 실패:", error);
       }
     };
-    fetchTodos();
+    fetchData();
   }, []);
 
   const today = new Date();
@@ -60,44 +68,32 @@ function TodoList() {
     if (!window.confirm("정말 이 할 일을 삭제할까요?")) return;
     try {
       const response = await api.delete(`/todos/${id}`);
-      if (response.data.success) {
-        setTodos(todos.filter(todo => todo.id !== id));
-      }
+      if (response.data.success) setTodos(todos.filter(todo => todo.id !== id));
     } catch (error) {
-      console.error("삭제 실패:", error);
       alert("삭제 중 오류가 발생했습니다.");
     }
   };
 
-  // ⭐️ 이제 DB에도 저장됨
   const handleUpdate = async (id, newText, newDate) => {
     const prevTodos = todos;
-    setTodos(todos.map(todo =>
-      todo.id === id ? { ...todo, text: newText, targetDate: newDate } : todo
-    ));
+    setTodos(todos.map(todo => todo.id === id ? { ...todo, text: newText, targetDate: newDate } : todo));
     try {
       await api.patch(`/todos/${id}`, { content: newText, targetDate: newDate });
     } catch (error) {
-      console.error("수정 실패:", error);
       alert("수정 사항을 저장하지 못했습니다.");
-      setTodos(prevTodos); // 실패 시 원상복구
+      setTodos(prevTodos);
     }
   };
 
-  // ⭐️ 이제 DB에도 저장됨
   const handleToggle = async (id) => {
     const target = todos.find(todo => todo.id === id);
     if (!target) return;
     const prevTodos = todos;
     const nextCompleted = !target.completed;
-
-    setTodos(todos.map(todo =>
-      todo.id === id ? { ...todo, completed: nextCompleted } : todo
-    ));
+    setTodos(todos.map(todo => todo.id === id ? { ...todo, completed: nextCompleted } : todo));
     try {
       await api.patch(`/todos/${id}`, { isDone: nextCompleted });
     } catch (error) {
-      console.error("상태 변경 실패:", error);
       alert("완료 상태를 저장하지 못했습니다.");
       setTodos(prevTodos);
     }
@@ -106,16 +102,14 @@ function TodoList() {
   const handleAddTodo = async () => {
     if (inputValue.trim() === '') return;
     try {
-      const response = await api.post('/todos', {
-        content: inputValue,
-        targetDate: dueDate
-      });
+      const response = await api.post('/todos', { content: inputValue, targetDate: dueDate });
       if (response.data.success) {
         const newTodo = {
           id: response.data.id,
           text: inputValue,
           targetDate: dueDate,
           completed: false,
+          goalID: UNSORTED_GOAL_ID,
           highlighted: false,
         };
         setTodos([newTodo, ...todos]);
@@ -131,7 +125,7 @@ function TodoList() {
     if (e.key === 'Enter') handleAddTodo();
   };
 
-  const sortedTodos = [...todos].sort((a, b) => {
+  const sortTodos = (list) => [...list].sort((a, b) => {
     if (a.completed !== b.completed) return a.completed ? 1 : -1;
     if (!a.targetDate && !b.targetDate) return 0;
     if (!a.targetDate) return 1;
@@ -139,125 +133,85 @@ function TodoList() {
     return new Date(a.targetDate) - new Date(b.targetDate);
   });
 
+  // ⭐️ 목표별로 그룹핑
+  const groupedByGoal = goals.map(g => ({
+    goal: g,
+    todos: sortTodos(todos.filter(t => t.goalID === g.id))
+  })).filter(group => group.todos.length > 0);
+
+  const unsortedTodos = sortTodos(todos.filter(t => !goals.some(g => g.id === t.goalID)));
+
   return (
-    <div style={{
-      backgroundColor: '#FBFAF9',
-      minHeight: '100vh',
-      width: '100%',
-      padding: '60px 8%',
-      boxSizing: 'border-box',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
+    <div style={{ minHeight: '100vh', width: '100%', padding: '60px 8%', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' }}>
+
       <div style={{ textAlign: 'left', marginBottom: '20px' }}>
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            padding: '10px 15px',
-            borderRadius: '8px',
-            border: 'none',
-            backgroundColor: '#eee',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            color: '#333'
-          }}
-        >
-          홈으로
-        </button>
+        <button onClick={() => navigate('/')} className="btn btn-ghost">← 홈으로</button>
       </div>
 
-      <div style={{ flexShrink: 0 }}>
-        <div style={{ marginBottom: '40px', textAlign: 'left', position: 'relative' }}>
-          <p style={{ margin: '0 0 8px', fontSize: '16px', color: '#bbb', fontWeight: '600' }}>{formattedDate}</p>
-          <h1 style={{ margin: 0, fontSize: '48px', fontWeight: '800', color: '#111' }}>To-Do</h1>
-          <p style={{ margin: '12px 0 0', fontSize: '18px', color: '#999', fontWeight: '500' }}>
-            {remainingCount}개 남음 · {completedCount}개 완료
-          </p>
-        </div>
+      <div style={{ marginBottom: '30px' }}>
+        <p style={{ margin: '0 0 8px', fontSize: '15px', color: 'var(--text-muted)', fontWeight: 600 }}>{formattedDate}</p>
+        <h1 style={{ margin: 0, fontSize: '40px' }}>To-Do</h1>
+        <p style={{ margin: '10px 0 0', fontSize: '16px', color: 'var(--text-muted)' }}>
+          {remainingCount}개 남음 · {completedCount}개 완료
+        </p>
+      </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '20px',
-          marginBottom: '30px'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px 24px',
-            border: '2px solid #ddd',
-            borderRadius: '16px',
-            backgroundColor: 'white',
-            boxSizing: 'border-box',
-            gap: '10px'
-          }}>
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="새로운 목표를 추가해보세요"
-              style={{
-                border: 'none',
-                outline: 'none',
-                fontSize: '16px',
-                fontWeight: '500',
-                flexGrow: 1,
-                backgroundColor: 'transparent'
-              }}
-            />
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              style={{
-                border: 'none',
-                outline: 'none',
-                fontSize: '14px',
-                color: '#777',
-                cursor: 'pointer',
-                backgroundColor: 'transparent'
-              }}
-            />
-            <button
-              onClick={handleAddTodo}
-              style={{
-                width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#ccc', color: 'white', border: 'none', cursor: 'pointer', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-              }}
-            >
-              +
-            </button>
+      <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '36px' }}>
+        <input
+          type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown} placeholder="새로운 할 일을 추가해보세요 (미분류로 저장)"
+          className="field" style={{ border: 'none', boxShadow: 'none', flexGrow: 1 }}
+        />
+        <input
+          type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}
+          className="field" style={{ border: 'none', boxShadow: 'none', width: 'auto', color: 'var(--text-muted)' }}
+        />
+        <button onClick={handleAddTodo} className="btn btn-coral" style={{ padding: '10px 18px' }}>+</button>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '36px' }}>
+        {groupedByGoal.map(({ goal, todos: goalTodos }) => {
+          const doneCount = goalTodos.filter(t => t.completed).length;
+          return (
+            <div key={goal.id}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                <h2 style={{ fontSize: '19px' }}>{goal.content}</h2>
+                <span className="badge badge-purple">{doneCount}/{goalTodos.length}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                {goalTodos.map((todo) => (
+                  <TodoItem
+                    key={todo.id} id={todo.id} text={todo.text} targetDate={todo.targetDate}
+                    dDay={calculateDDay(todo.targetDate)} completed={todo.completed} highlighted={todo.highlighted}
+                    onDelete={handleDelete} onUpdate={handleUpdate} onToggle={handleToggle}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+
+        {unsortedTodos.length > 0 && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <h2 style={{ fontSize: '19px', color: 'var(--text-muted)' }}>미분류</h2>
+              <span className="badge badge-coral">{unsortedTodos.filter(t => t.completed).length}/{unsortedTodos.length}</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {unsortedTodos.map((todo) => (
+                <TodoItem
+                  key={todo.id} id={todo.id} text={todo.text} targetDate={todo.targetDate}
+                  dDay={calculateDDay(todo.targetDate)} completed={todo.completed} highlighted={todo.highlighted}
+                  onDelete={handleDelete} onUpdate={handleUpdate} onToggle={handleToggle}
+                />
+              ))}
+            </div>
           </div>
-          <div></div>
-        </div>
-      </div>
+        )}
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gridAutoRows: 'min-content',
-        alignContent: 'start',
-        gap: '20px',
-        width: '100%',
-        overflowY: 'auto',
-        paddingRight: '10px',
-        flexGrow: 1,
-      }}>
-        {sortedTodos.map((todo) => (
-          <TodoItem
-            key={todo.id}
-            id={todo.id}
-            text={todo.text}
-            targetDate={todo.targetDate}
-            dDay={calculateDDay(todo.targetDate)}
-            completed={todo.completed}
-            highlighted={todo.highlighted}
-            onDelete={handleDelete}
-            onUpdate={handleUpdate}
-            onToggle={handleToggle}
-          />
-        ))}
+        {todos.length === 0 && (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '40px' }}>아직 할 일이 없어요. 위에서 추가해보세요!</p>
+        )}
       </div>
     </div>
   );

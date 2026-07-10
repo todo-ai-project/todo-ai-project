@@ -22,9 +22,14 @@ function MakeTodo() {
     setResult(null);
 
     try {
+      // 1. 목표 먼저 저장
+      const goalRes = await api.post('/goals', { content: goal });
+      const goalID = goalRes.data.id;
+
+      // 2. 그 목표 ID로 AI 할 일 생성
       const response = await api.post('/todos/generate', {
         userGoal: goal,
-        goalID: `goal_${Date.now()}`
+        goalID
       });
 
       if (response.data.success) {
