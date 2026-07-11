@@ -45,6 +45,14 @@ function IconTrash({ size = 13 }) {
   );
 }
 
+function IconCheck({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
 function MyPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -259,7 +267,7 @@ function MyPage() {
 
   return (
     <div style={{ minHeight: '100vh', width: '100%', padding: '40px 6%', boxSizing: 'border-box' }}>
-      <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1440px', margin: '0' }}>
         <BackButton />
 
         <p style={{ fontSize: 'var(--fs-xl)', fontWeight: 800, color: 'var(--text-h)', margin: '0 0 22px' }}>마이페이지</p>
@@ -323,12 +331,18 @@ function MyPage() {
               <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', marginBottom: '4px' }}>닉네임</p>
               <h2 style={{ fontSize: 'var(--fs-xl)' }}>{currentUser?.displayName || '알 수 없음'}</h2>
               <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                <span className="badge badge-muted" style={{ fontSize: 'var(--fs-xs)' }}>전체 {stats.total}개</span>
-                <span className="badge badge-primary" style={{ fontSize: 'var(--fs-xs)' }}>완료 {stats.completed}개</span>
+                <span className="badge badge-muted" style={{ fontSize: 'var(--fs-sm)', padding: '5px 14px' }}>전체 {stats.total}개</span>
+                <span className="badge badge-primary" style={{ fontSize: 'var(--fs-sm)', padding: '5px 14px' }}>완료 {stats.completed}개</span>
               </div>
             </div>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost btn-sm">로그아웃</button>
+          <button
+            onClick={handleLogout}
+            className="btn btn-ghost"
+            style={{ padding: '11px 22px', fontSize: 'var(--fs-base)', fontWeight: 700 }}
+          >
+            로그아웃
+          </button>
         </div>
 
         {(message || error) && (
@@ -340,27 +354,61 @@ function MyPage() {
           </p>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <p style={{ fontWeight: 700, fontSize: 'var(--fs-md)' }}>닉네임 변경</p>
-              <input className="field" value={nickname} onChange={(e) => setNickname(e.target.value)} />
-              <button onClick={handleNicknameChange} className="btn btn-primary btn-block">닉네임 저장</button>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+          <div>
+            <p style={{ fontWeight: 700, fontSize: 'var(--fs-md)' }}>친구에게 보여줄 목표</p>
+            <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', margin: '4px 0 0' }}>
+              최대 3개까지 선택할 수 있어요 ({pinnedCount}/3)
+            </p>
+          </div>
+          {goals.length === 0 ? (
+            <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>등록된 목표가 없어요.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {goals.map((g) => {
+                const isPinned = !!g.isPinned;
+                const isBusy = pinBusyId === g.id;
+                return (
+                  <button
+                    key={g.id}
+                    type="button"
+                    onClick={() => handleTogglePin(g)}
+                    disabled={isBusy}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', width: '100%',
+                      padding: '13px 16px', borderRadius: '12px', border: 'none', textAlign: 'left',
+                      cursor: isBusy ? 'default' : 'pointer',
+                      background: isPinned ? 'var(--primary-soft)' : 'var(--surface)',
+                      boxShadow: isPinned ? '0 0 0 1.5px var(--primary-strong)' : '0 0 0 1px var(--border)',
+                      opacity: isBusy ? 0.6 : 1,
+                      transition: 'background 0.12s ease, box-shadow 0.12s ease',
+                    }}
+                  >
+                    <span style={{
+                      width: '20px', height: '20px', borderRadius: '6px', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: isPinned ? 'var(--primary-strong)' : 'transparent',
+                      boxShadow: isPinned ? 'none' : 'inset 0 0 0 1.5px var(--border)',
+                      color: '#fff',
+                    }}>
+                      {isPinned && <IconCheck />}
+                    </span>
+                    <span style={{ fontSize: 'var(--fs-base)', fontWeight: isPinned ? 700 : 500, color: 'var(--text-h)' }}>
+                      {g.content}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+          )}
+        </div>
 
-            <div className="card" style={{
-              display: 'flex', flexDirection: 'column', gap: '10px',
-              background: 'var(--danger-soft)', boxShadow: '0 0 0 1px #E3B6AE',
-            }}>
-              <p style={{ fontWeight: 700, fontSize: 'var(--fs-md)', color: 'var(--danger-text)' }}>계정 삭제</p>
-              <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--danger-text)', opacity: 0.75 }}>
-                삭제 전 현재 비밀번호를 오른쪽 "비밀번호 변경" 칸에 먼저 입력해주세요.
-              </p>
-              <button onClick={handleDeleteAccount} className="btn btn-danger" style={{ alignSelf: 'flex-start', marginTop: '4px' }}>
-                계정 삭제
-              </button>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'stretch' }}>
+
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p style={{ fontWeight: 700, fontSize: 'var(--fs-md)' }}>닉네임 변경</p>
+            <input className="field" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+            <button onClick={handleNicknameChange} className="btn btn-primary btn-block">닉네임 저장</button>
           </div>
 
           <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -372,31 +420,21 @@ function MyPage() {
 
         </div>
 
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+        <div className="card" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px',
+          marginTop: '16px', background: 'var(--danger-soft)', boxShadow: '0 0 0 1px #E3B6AE',
+        }}>
           <div>
-            <p style={{ fontWeight: 700, fontSize: 'var(--fs-md)' }}>친구에게 보여줄 목표</p>
-            <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', margin: '4px 0 0' }}>
-              최대 3개까지 선택할 수 있어요 ({pinnedCount}/3)
+            <p style={{ fontWeight: 700, fontSize: 'var(--fs-md)', color: 'var(--danger-text)' }}>계정 삭제</p>
+            <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--danger-text)', opacity: 0.75, marginTop: '4px' }}>
+              삭제 전 현재 비밀번호를 위 "비밀번호 변경" 칸에 먼저 입력해주세요.
             </p>
           </div>
-          {goals.length === 0 ? (
-            <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)' }}>등록된 목표가 없어요.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {goals.map((g) => (
-                <label key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={!!g.isPinned}
-                    disabled={pinBusyId === g.id}
-                    onChange={() => handleTogglePin(g)}
-                  />
-                  <span style={{ fontSize: 'var(--fs-base)', color: 'var(--text-h)' }}>{g.content}</span>
-                </label>
-              ))}
-            </div>
-          )}
+          <button onClick={handleDeleteAccount} className="btn btn-danger" style={{ flexShrink: 0 }}>
+            계정 삭제
+          </button>
         </div>
+
       </div>
     </div>
   );

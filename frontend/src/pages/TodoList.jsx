@@ -285,7 +285,7 @@ function TodoList() {
     }
   };
 
-    const handleArchiveGoal = async (goalId) => {
+  const handleArchiveGoal = async (goalId) => {
     if (!window.confirm('이 목표를 보관함으로 옮길까요? 목록에서는 더 이상 안 보여요.')) return;
     try {
       await api.patch(`/goals/${goalId}/archive`, { archived: true });
@@ -420,13 +420,20 @@ function TodoList() {
             <div key={goal.id} className="card" style={{ borderLeft: `4px solid ${theme.bar}`, borderRadius: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
                   <h2 style={{ fontSize: '17px', color: theme.title }}>{goal.content}</h2>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '80px', height: '5px', background: theme.track, borderRadius: '999px', overflow: 'hidden' }}>
                       <div style={{ width: `${pct}%`, height: '100%', background: theme.bar }} />
                     </div>
                     <span style={{ fontSize: '12px', fontWeight: 700, color: theme.badge }}>{doneCount}/{goalTodos.length}</span>
                     {pct === 100 && (
-                      <button onClick={() => handleArchiveGoal(goal.id)} className="btn btn-ghost btn-sm">
+                      <button
+                        onClick={() => handleArchiveGoal(goal.id)}
+                        className="btn"
+                        style={{
+                          background: 'var(--clay-strong)', color: '#fff',
+                          padding: '10px 20px', fontSize: 'var(--fs-base)', fontWeight: 700,
+                        }}
+                      >
                         📦 보관하기
                       </button>
                     )}

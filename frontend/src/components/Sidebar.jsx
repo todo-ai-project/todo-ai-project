@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { NavLink } from 'react-router-dom';
 import api from '../api';
+import logo from '../assets/logo.png';
 
 function IconHome({ size = 17 }) {
   return (
@@ -83,7 +84,9 @@ function Sidebar() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotif, setShowNotif] = useState(false);
+  const [notifPos, setNotifPos] = useState({ top: 0, left: 0 });
   const notifRef = useRef(null);
+  const bellRef = useRef(null);
 
   const fetchPending = useCallback(async () => {
     try {
@@ -118,7 +121,12 @@ function Sidebar() {
 
   useEffect(() => {
     function handleOutside(e) {
-      if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false);
+      if (
+        notifRef.current && !notifRef.current.contains(e.target) &&
+        bellRef.current && !bellRef.current.contains(e.target)
+      ) {
+        setShowNotif(false);
+      }
     }
     document.addEventListener('mousedown', handleOutside);
     return () => document.removeEventListener('mousedown', handleOutside);
@@ -126,6 +134,10 @@ function Sidebar() {
 
   const handleToggleNotif = async () => {
     const next = !showNotif;
+    if (next && bellRef.current) {
+      const rect = bellRef.current.getBoundingClientRect();
+      setNotifPos({ top: rect.bottom + 8, left: rect.left });
+    }
     setShowNotif(next);
     if (next && unreadCount > 0) {
       try {
@@ -149,53 +161,53 @@ function Sidebar() {
       minHeight: '100vh',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', paddingLeft: '6px' }}>
-        <p style={{ fontSize: 'var(--fs-md)', fontWeight: 800, color: 'var(--text-h)', margin: 0 }}>
-          투두메이트
-        </p>
+        <img src={logo} alt="TodoMate" style={{ height: '28px', width: 'auto', display: 'block' }} />
 
-        <div ref={notifRef} style={{ position: 'relative' }}>
-          <button
-            type="button"
-            onClick={handleToggleNotif}
-            style={{
-              position: 'relative', width: '30px', height: '30px', borderRadius: '50%',
-              border: 'none', background: 'transparent', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)',
-            }}
-            aria-label="알림"
-          >
-            <IconBell />
-            {unreadCount > 0 && (
-              <span style={{
-                position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px',
-                borderRadius: '50%', background: 'var(--danger)',
-              }} />
-            )}
-          </button>
-
-          {showNotif && (
-            <div style={{
-              position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 30,
-              width: '280px', maxHeight: '340px', overflowY: 'auto',
-              background: 'var(--surface)', borderRadius: '14px', boxShadow: '0 10px 28px rgba(0,0,0,0.16)',
-              border: '1px solid var(--border)', padding: '10px',
-            }}>
-              <p style={{ fontSize: 'var(--fs-sm)', fontWeight: 700, color: 'var(--text-h)', margin: '4px 6px 8px' }}>알림</p>
-              {notifications.length === 0 ? (
-                <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', padding: '10px 6px' }}>알림이 없어요.</p>
-              ) : (
-                notifications.map((n) => (
-                  <div key={n.id} style={{ padding: '10px 8px', borderRadius: '10px', background: n.isRead ? 'transparent' : 'var(--primary-soft)' }}>
-                    <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-h)', margin: '0 0 3px', lineHeight: 1.4 }}>
-                      <strong>{n.actorNickname}</strong>님이 "{n.goalContent}"을(를) {n.type === 'congrats' ? '축하' : '응원'}했어요!
-                    </p>
-                    <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', margin: 0 }}>{formatRelativeTime(n.createdAt)}</p>
-                  </div>
-                ))
-              )}
-            </div>
+        <button
+          ref={bellRef}
+          type="button"
+          onClick={handleToggleNotif}
+          style={{
+            position: 'relative', width: '30px', height: '30px', borderRadius: '50%',
+            border: 'none', background: 'transparent', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)',
+          }}
+          aria-label="알림"
+        >
+          <IconBell />
+          {unreadCount > 0 && (
+            <span style={{
+              position: 'absolute', top: '2px', right: '2px', width: '8px', height: '8px',
+              borderRadius: '50%', background: 'var(--danger)',
+            }} />
           )}
-        </div>
+        </button>
+
+        {showNotif && (
+          <div
+            ref={notifRef}
+            style={{
+              position: 'fixed', top: `${notifPos.top}px`, left: `${notifPos.left}px`, zIndex: 50,
+              width: '300px', maxHeight: '360px', overflowY: 'auto',
+              background: 'var(--surface)', borderRadius: '14px', boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
+              border: '1px solid var(--border)', padding: '10px',
+            }}
+          >
+            <p style={{ fontSize: 'var(--fs-sm)', fontWeight: 700, color: 'var(--text-h)', margin: '4px 6px 8px' }}>알림</p>
+            {notifications.length === 0 ? (
+              <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', padding: '10px 6px' }}>알림이 없어요.</p>
+            ) : (
+              notifications.map((n) => (
+                <div key={n.id} style={{ padding: '10px 8px', borderRadius: '10px', background: n.isRead ? 'transparent' : 'var(--primary-soft)' }}>
+                  <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-h)', margin: '0 0 3px', lineHeight: 1.4 }}>
+                    <strong>{n.actorNickname}</strong>님이 "{n.goalContent}"을(를) {n.type === 'congrats' ? '축하' : '응원'}했어요!
+                  </p>
+                  <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', margin: 0 }}>{formatRelativeTime(n.createdAt)}</p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

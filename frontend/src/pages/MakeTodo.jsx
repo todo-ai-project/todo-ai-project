@@ -99,43 +99,39 @@ function MakeTodo() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '0 20px',
-      position: 'relative'
-    }}>
-      <div style={{ position: 'absolute', top: '32px', left: '6%' }}>
-        <BackButton style={{ marginBottom: 0 }} />
-      </div>
-      <h1 style={{ fontSize: '36px', marginBottom: '10px', textAlign: 'center' }}>
-        요즘 이루고 싶은 목표가 있으신가요?
-      </h1>
-      <p style={{ fontSize: '16px', color: 'var(--text-muted)', marginBottom: '40px', textAlign: 'center' }}>
-        막연해도 괜찮아요. 한 줄만 적어주시면, 실행 가능한 계획으로 나눠드릴게요.
-      </p>
+    <div style={{ minHeight: '100vh', width: '100%', padding: '40px 6%', boxSizing: 'border-box' }}>
+      <BackButton />
 
-      <div className="card" style={{
-        width: '100%',
-        maxWidth: '600px',
-        display: 'flex',
-        gap: '12px',
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        minHeight: 'calc(100vh - 120px)', textAlign: 'center',
       }}>
-        <input
-          type="text"
-          value={goal}
-          onChange={(e) => setGoal(e.target.value)}
-          placeholder="예: 집밥 만들어 먹기"
-          className="field"
-          style={{ flex: 1, border: 'none', boxShadow: 'none', fontSize: '16px' }}
-          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-        />
-        <button onClick={handleSubmit} className="btn btn-primary">
-          분석 시작
-        </button>
+        <h1 style={{ fontSize: '36px', marginBottom: '10px', textAlign: 'center' }}>
+          요즘 이루고 싶은 목표가 있으신가요?
+        </h1>
+        <p style={{ fontSize: '16px', color: 'var(--text-muted)', marginBottom: '40px', textAlign: 'center' }}>
+          막연해도 괜찮아요. 한 줄만 적어주시면, 실행 가능한 계획으로 나눠드릴게요.
+        </p>
+
+        <div className="card" style={{
+          width: '100%',
+          maxWidth: '600px',
+          display: 'flex',
+          gap: '12px',
+        }}>
+          <input
+            type="text"
+            value={goal}
+            onChange={(e) => setGoal(e.target.value)}
+            placeholder="예: 집밥 만들어 먹기"
+            className="field"
+            style={{ flex: 1, border: 'none', boxShadow: 'none', fontSize: '16px' }}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+          />
+          <button onClick={handleSubmit} className="btn btn-primary">
+            분석 시작
+          </button>
+        </div>
       </div>
     </div>
   );

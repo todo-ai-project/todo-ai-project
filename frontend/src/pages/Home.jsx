@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
-import goalCardImg from '../assets/goal-card.jpg';
 
 function IconList({ size = 17 }) {
   return (
@@ -17,6 +16,14 @@ function IconUser({ size = 17 }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="8" r="4" />
       <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+    </svg>
+  );
+}
+
+function IconPlus({ size = 17 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 5v14" /><path d="M5 12h14" />
     </svg>
   );
 }
@@ -77,9 +84,10 @@ function Home() {
         }}>
           <div>
             <p style={{ fontSize: 'var(--fs-sm)', fontWeight: 700, color: 'rgba(255,255,255,0.78)', margin: '0 0 10px' }}>오늘의 진행 상황</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px' }}>
-              <span style={{ fontSize: 'var(--fs-display)', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{completed}</span>
-              <span style={{ fontSize: 'var(--fs-md)', color: 'rgba(255,255,255,0.8)' }}>/ {total}개 완료</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <span style={{ fontSize: 'var(--fs-md)', color: 'rgba(255,255,255,0.8)' }}>총 {total}개 중</span>
+              <span style={{ fontSize: 'var(--fs-display)', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{completed}개</span>
+              <span style={{ fontSize: 'var(--fs-md)', color: 'rgba(255,255,255,0.8)' }}>완료</span>
             </div>
           </div>
 
@@ -137,6 +145,23 @@ function Home() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
 
         <button
+          onClick={() => navigate('/make')}
+          style={{
+            textAlign: 'left', border: 'none', cursor: 'pointer',
+            background: 'var(--clay-soft)', borderRadius: '18px', padding: '20px 18px',
+          }}
+        >
+          <div style={{
+            width: '40px', height: '40px', borderRadius: '11px', background: 'var(--clay-strong)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px', color: '#fff',
+          }}>
+            <IconPlus size={19} />
+          </div>
+          <p style={{ fontSize: 'var(--fs-md)', fontWeight: 700, color: 'var(--clay-text)', margin: '0 0 4px' }}>새 목표 만들기</p>
+          <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--clay-text)', margin: 0, lineHeight: 1.5 }}>AI가 실행 계획을 짜드려요</p>
+        </button>
+
+        <button
           onClick={() => navigate('/list')}
           style={{
             textAlign: 'left', border: 'none', cursor: 'pointer',
@@ -168,21 +193,6 @@ function Home() {
           </div>
           <p style={{ fontSize: 'var(--fs-md)', fontWeight: 700, color: 'var(--text-h)', margin: '0 0 4px' }}>마이페이지</p>
           <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>계정과 설정을 관리해요</p>
-        </button>
-
-        <button
-          onClick={() => navigate('/make')}
-          style={{
-            position: 'relative', textAlign: 'left', border: 'none', cursor: 'pointer',
-            borderRadius: '18px', padding: 0, overflow: 'hidden', minHeight: '160px',
-            backgroundImage: `linear-gradient(180deg, rgba(24,32,27,0.05) 0%, rgba(24,32,27,0.75) 100%), url(${goalCardImg})`,
-            backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'var(--slate-soft)',
-          }}
-        >
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '18px 16px' }}>
-            <p style={{ fontSize: 'var(--fs-md)', fontWeight: 700, color: '#fff', margin: '0 0 4px' }}>새 목표 만들기</p>
-            <p style={{ fontSize: 'var(--fs-sm)', color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.5 }}>AI가 실행 계획을 짜드려요</p>
-          </div>
         </button>
       </div>
     </div>

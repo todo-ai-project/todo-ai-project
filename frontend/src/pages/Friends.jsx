@@ -221,7 +221,7 @@ function Friends() {
 
   return (
     <div style={{ minHeight: '100vh', width: '100%', padding: '40px 6%', boxSizing: 'border-box' }}>
-      <div style={{ maxWidth: '760px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1440px', margin: '0' }}>
         <BackButton />
         <p style={{ fontSize: 'var(--fs-xl)', fontWeight: 800, color: 'var(--text-h)', margin: '0 0 22px' }}>친구</p>
 
