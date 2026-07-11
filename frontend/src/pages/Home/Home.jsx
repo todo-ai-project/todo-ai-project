@@ -28,27 +28,49 @@ function IconUser({ size = 17 }) {
   );
 }
 
+function calculateDaysLeft(targetDateString) {
+  if (!targetDateString) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(targetDateString);
+  target.setHours(0, 0, 0, 0);
+  const diffTime = target.getTime() - today.getTime();
+  return Math.round(diffTime / (1000 * 60 * 60 * 24));
+}
+
+function formatDDay(days) {
+  if (days === 0) return 'D-Day';
+  if (days > 0) return `D-${days}`;
+  return `D+${Math.abs(days)}`;
+}
+
 function Home() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ total: 0, completed: 0 });
+  const [todos, setTodos] = useState([]);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchTodos = async () => {
       try {
         const res = await api.get('/todos');
         if (res.data.success) {
-          const total = res.data.data.length;
-          const completed = res.data.data.filter((t) => t.isDone).length;
-          setStats({ total, completed });
+          setTodos(res.data.data);
         }
       } catch (err) {
-        console.error('진행 상황 불러오기 실패', err);
+        console.error('할 일 불러오기 실패', err);
       }
     };
-    fetchStats();
+    fetchTodos();
   }, []);
 
-  const progressPct = stats.total === 0 ? 0 : Math.round((stats.completed / stats.total) * 100);
+  const total = todos.length;
+  const completed = todos.filter((t) => t.isDone).length;
+  const progressPct = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+  const upcoming = todos
+    .filter((t) => !t.isDone && t.targetDate)
+    .map((t) => ({ ...t, daysLeft: calculateDaysLeft(t.targetDate) }))
+    .sort((a, b) => a.daysLeft - b.daysLeft)
+    .slice(0, 4);
 
   const cards = [
     {
@@ -91,24 +113,68 @@ function Home() {
       <p style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-h)', margin: '0 0 4px' }}>안녕하세요 👋</p>
       <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 24px' }}>오늘은 뭘 해볼까요?</p>
 
-      <div style={{
-        background: 'var(--primary)', borderRadius: '14px', padding: '18px 22px', marginBottom: '22px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px'
-      }}>
-        <div>
-          <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.75)', margin: '0 0 6px' }}>오늘의 진행 상황</p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-            <span style={{ fontSize: '26px', fontWeight: 800, color: '#fff' }}>{stats.completed}</span>
-            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)' }}>/ {stats.total}개 완료</span>
+      <div style={{ display: 'grid', gridTemplateColumns: total > 0 ? '1.3fr 1fr' : '1fr', gap: '14px', marginBottom: '22px' }}>
+        <div style={{
+          background: 'var(--primary)', borderRadius: '14px', padding: '18px 22px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px'
+        }}>
+          <div>
+            <p style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.75)', margin: '0 0 6px' }}>오늘의 진행 상황</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              <span style={{ fontSize: '26px', fontWeight: 800, color: '#fff' }}>{completed}</span>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.75)' }}>/ {total}개 완료</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{progressPct}%</span>
+            <div style={{ width: '140px', height: '8px', background: 'rgba(255,255,255,0.25)', borderRadius: '999px', overflow: 'hidden' }}>
+              <div style={{ width: `${progressPct}%`, height: '100%', background: '#fff', borderRadius: '999px', transition: 'width 0.3s ease' }} />
+            </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.85)' }}>{progressPct}%</span>
-          <div style={{ width: '140px', height: '8px', background: 'rgba(255,255,255,0.25)', borderRadius: '999px', overflow: 'hidden' }}>
-            <div style={{ width: `${progressPct}%`, height: '100%', background: '#fff', borderRadius: '999px', transition: 'width 0.3s ease' }} />
+        {upcoming.length > 0 ? (
+          <div
+            onClick={() => navigate('/list')}
+            style={{
+              background: 'var(--surface-soft)', borderRadius: '14px', padding: '16px 20px',
+              boxShadow: '0 0 0 1px var(--border)', cursor: 'pointer',
+            }}
+          >
+            <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-muted)', margin: '0 0 12px' }}>마감이 얼마 안 남았어요</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {upcoming.map((t) => {
+                const urgent = t.daysLeft <= 0;
+                const soon = t.daysLeft > 0 && t.daysLeft <= 3;
+                const badgeBg = urgent ? 'var(--danger-soft)' : soon ? 'var(--clay-soft)' : 'var(--border)';
+                const badgeColor = urgent ? 'var(--danger-text)' : soon ? 'var(--clay-text)' : 'var(--text-muted)';
+                return (
+                  <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                    <span style={{
+                      fontSize: '13px', fontWeight: 500, color: 'var(--text-h)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {t.content}
+                    </span>
+                    <span className="badge" style={{ background: badgeBg, color: badgeColor, flexShrink: 0 }}>
+                      {formatDDay(t.daysLeft)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        ) : total > 0 ? (
+          <div style={{
+            background: 'var(--surface-soft)', borderRadius: '14px', padding: '16px 20px',
+            boxShadow: '0 0 0 1px var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.6 }}>
+              마감일이 등록된 할 일이 없어요.<br />할 일에 날짜를 추가하면 여기에 보여드릴게요.
+            </p>
+          </div>
+        ) : null}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>

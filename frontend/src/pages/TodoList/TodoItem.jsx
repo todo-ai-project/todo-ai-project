@@ -1,6 +1,13 @@
 //frontend>src>pages>TodoList>TodoItem.jsx
 import { useState } from 'react';
 
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const [y, m, d] = dateString.split('-');
+  if (!y || !m || !d) return dateString;
+  return `${y}.${m}.${d}`;
+}
+
 function TodoItem({ id, text, targetDate, dDay, completed, highlighted, onDelete, onUpdate, onToggle }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(text);
@@ -89,23 +96,30 @@ function TodoItem({ id, text, targetDate, dDay, completed, highlighted, onDelete
           )}
 
           {!isEditing && (
-            <span
-              className="badge"
-              style={dDay === 'D-Day' ? { background: 'var(--danger-soft)', color: 'var(--danger-text)' } : undefined}
-            >
-              {dDay}
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '3px' }}>
+              <span
+                className="badge"
+                style={dDay === 'D-Day' ? { background: 'var(--danger-soft)', color: 'var(--danger-text)' } : undefined}
+              >
+                {dDay}
+              </span>
+              {targetDate && (
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', paddingLeft: '2px' }}>
+                  {formatDate(targetDate)}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
         {isEditing ? (
-          <button onClick={handleSave} className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '13px' }}>저장</button>
+          <button onClick={handleSave} className="btn btn-ghost btn-sm">저장</button>
         ) : (
-          <button onClick={handleEditClick} className="btn btn-ghost" style={{ padding: '8px 14px', fontSize: '13px' }}>수정</button>
+          <button onClick={handleEditClick} className="btn btn-ghost btn-sm">수정</button>
         )}
-        <button onClick={handleDeleteClick} className="btn btn-danger" style={{ padding: '8px 14px', fontSize: '13px' }}>삭제</button>
+        <button onClick={handleDeleteClick} className="btn btn-danger btn-sm">삭제</button>
       </div>
     </div>
   );
