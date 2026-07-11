@@ -36,6 +36,15 @@
 
   --accent: var(--primary-strong);
 
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-base: 15px;
+  --fs-md: 17px;
+  --fs-lg: 20px;
+  --fs-xl: 26px;
+  --fs-2xl: 34px;
+  --fs-display: 44px;
+
   --radius: 16px;
   --radius-sm: 10px;
 
@@ -77,7 +86,7 @@ p {
   border: none;
   border-radius: 999px;
   padding: 13px 22px;
-  font-size: 14.5px;
+  font-size: var(--fs-base);
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.1s ease;
@@ -93,7 +102,7 @@ p {
 
 .btn-sm {
   padding: 8px 16px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 
 .btn-primary {
@@ -117,7 +126,7 @@ p {
   padding: 12px 16px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--border);
-  font-size: 15px;
+  font-size: var(--fs-base);
   outline: none;
   background: var(--surface);
 }
@@ -135,12 +144,11 @@ select.field option, select option {
   color: var(--text-h);
 }
 
-/* 기본 뱃지 — 별도 색 클래스를 안 붙여도 항상 색이 들어가도록 */
 .badge {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 700;
   background: var(--border);
   color: var(--text-muted);
@@ -171,6 +179,33 @@ select.field option, select option {
   color: var(--sage-text);
 }
 
+.avatar-circle {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.add-todo-card {
+  transition: box-shadow 0.15s ease;
+}
+
+.add-todo-card:focus-within {
+  box-shadow: 0 0 0 1.5px var(--primary-strong);
+}
+
 .auth-grid {
   min-height: 100vh;
   display: grid;
@@ -178,14 +213,28 @@ select.field option, select option {
 }
 
 .auth-brand {
-  background: var(--primary-strong);
+  position: relative;
   color: #fff;
   padding: 56px 52px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: relative;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
+}
+
+.auth-brand::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(24,32,27,0.35) 0%, rgba(24,32,27,0.75) 100%);
+  z-index: 0;
+}
+
+.auth-brand > * {
+  position: relative;
+  z-index: 1;
 }
 
 .auth-form-side {
@@ -201,12 +250,4 @@ select.field option, select option {
   .auth-brand {
     display: none;
   }
-}
-
-.add-todo-card {
-  transition: box-shadow 0.15s ease;
-}
-
-.add-todo-card:focus-within {
-  box-shadow: 0 0 0 1.5px var(--primary-strong);
 }

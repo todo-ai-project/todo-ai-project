@@ -13,6 +13,9 @@ require('./config/firebase');
 const todoRouter = require('./routes/todo');
 const goalRouter = require('./routes/goal');
 const authMiddleware = require('./middleware/authMiddleware');
+const userRouter = require('./routes/user');      
+const friendRouter = require('./routes/friends');
+const notificationRouter = require('./routes/notifications');
 
 const app = express();
 
@@ -29,6 +32,9 @@ app.get('/', (req, res) => {
 // 6. API 라우팅 (인증 필요)
 app.use('/api/todos', authMiddleware, todoRouter);
 app.use('/api/goals', authMiddleware, goalRouter);
+app.use('/api/users', authMiddleware, userRouter);    
+app.use('/api/friends', authMiddleware, friendRouter);
+app.use('/api/notifications', authMiddleware, notificationRouter);
 
 // 7. 404 경로 처리
 app.use((req, res) => {

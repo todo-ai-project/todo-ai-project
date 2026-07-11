@@ -1,8 +1,36 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../api';
+import api from '../api';
 import AnalyzePage from "./AnalyzePage";
-import BackButton from '../../components/BackButton';
+import BackButton from '../components/BackButton';
+
+const DDAY_PREFIX = /^D-(\d+)\s*:\s*/;
+
+function applyDefaultDeadlines(items) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return Promise.all(items.map(async (item) => {
+    if (typeof item === 'string' || !item.id) return item;
+
+    const match = item.content && item.content.match(DDAY_PREFIX);
+    if (!match) return item;
+
+    const daysFromNow = parseInt(match[1], 10);
+    const target = new Date(today);
+    target.setDate(target.getDate() + daysFromNow);
+    const targetDate = target.toISOString().slice(0, 10);
+    const cleanContent = item.content.replace(DDAY_PREFIX, '');
+
+    try {
+      await api.patch(`/todos/${item.id}`, { targetDate, content: cleanContent });
+      return { ...item, targetDate, content: cleanContent };
+    } catch (err) {
+      console.error('기본 마감일 설정 실패', err);
+      return item;
+    }
+  }));
+}
 
 function MakeTodo() {
   const navigate = useNavigate();
@@ -31,7 +59,12 @@ function MakeTodo() {
       });
 
       if (response.data.success) {
-        setResult(response.data.data);
+        const rawItems = Array.isArray(response.data.data)
+          ? response.data.data
+          : Object.values(response.data.data).flat();
+
+        const enrichedItems = await applyDefaultDeadlines(rawItems);
+        setResult(enrichedItems);
       } else {
         alert("AI 분석 플랜 생성에 실패했습니다.");
         setIsAnalyzing(false);

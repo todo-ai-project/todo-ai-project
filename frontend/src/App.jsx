@@ -2,15 +2,17 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebaseConfig";
-import Home from "./pages/Home/Home";
-import TodoList from "./pages/TodoList/TodoList";
-import MakeTodo from "./pages/MakeTodo/MakeTodo";
-import LoginPage from "./pages/Login/LoginPage";
-import MyPage from "./pages/MyPage/MyPage";
+import Home from "./pages/Home";
+import TodoList from "./pages/TodoList";
+import MakeTodo from "./pages/MakeTodo";
+import LoginPage from "./pages/LoginPage";
+import MyPage from "./pages/MyPage";
+import Friends from "./pages/Friends";
+import Archive from "./pages/Archive";
 import Layout from "./components/Layout";
 
 function App() {
-  const [user, setUser] = useState(undefined); // undefined: 확인중, null: 비로그인
+  const [user, setUser] = useState(undefined);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -30,6 +32,8 @@ function App() {
         <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
         <Route path="/make" element={<PrivateRoute><MakeTodo /></PrivateRoute>} />
         <Route path="/list" element={<PrivateRoute><TodoList /></PrivateRoute>} />
+        <Route path="/friends" element={<PrivateRoute><Friends /></PrivateRoute>} />
+        <Route path="/archive" element={<PrivateRoute><Archive /></PrivateRoute>} />
         <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>

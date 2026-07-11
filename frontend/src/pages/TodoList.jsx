@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import BackButton from '../../components/BackButton';
-import api from '../../api';
+import BackButton from '../components/BackButton';
+import api from '../api';
 import TodoItem from './TodoItem';
 
 const UNSORTED_GOAL_ID = 'default';
@@ -285,6 +285,16 @@ function TodoList() {
     }
   };
 
+    const handleArchiveGoal = async (goalId) => {
+    if (!window.confirm('이 목표를 보관함으로 옮길까요? 목록에서는 더 이상 안 보여요.')) return;
+    try {
+      await api.patch(`/goals/${goalId}/archive`, { archived: true });
+      setGoals(prev => prev.filter(g => g.id !== goalId));
+    } catch (error) {
+      alert('보관에 실패했어요.');
+    }
+  };
+
   const handleUpdate = async (id, newText, newDate) => {
     const prevTodos = todos;
     setTodos(todos.map(todo => todo.id === id ? { ...todo, text: newText, targetDate: newDate } : todo));
@@ -344,7 +354,7 @@ function TodoList() {
     return new Date(a.targetDate) - new Date(b.targetDate);
   });
 
-  const groupedByGoal = goals.map((g, index) => ({
+  const groupedByGoal = goals.filter(g => !g.archived).map((g, index) => ({
     goal: g,
     theme: GOAL_THEMES[index % GOAL_THEMES.length],
     todos: sortTodos(todos.filter(t => t.goalID === g.id))
@@ -408,15 +418,20 @@ function TodoList() {
           const pct = goalTodos.length === 0 ? 0 : Math.round((doneCount / goalTodos.length) * 100);
           return (
             <div key={goal.id} className="card" style={{ borderLeft: `4px solid ${theme.bar}`, borderRadius: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-                <h2 style={{ fontSize: '17px', color: theme.title }}>{goal.content}</h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '80px', height: '5px', background: theme.track, borderRadius: '999px', overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: theme.bar }} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                  <h2 style={{ fontSize: '17px', color: theme.title }}>{goal.content}</h2>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '80px', height: '5px', background: theme.track, borderRadius: '999px', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: theme.bar }} />
+                    </div>
+                    <span style={{ fontSize: '12px', fontWeight: 700, color: theme.badge }}>{doneCount}/{goalTodos.length}</span>
+                    {pct === 100 && (
+                      <button onClick={() => handleArchiveGoal(goal.id)} className="btn btn-ghost btn-sm">
+                        📦 보관하기
+                      </button>
+                    )}
                   </div>
-                  <span style={{ fontSize: '12px', fontWeight: 700, color: theme.badge }}>{doneCount}/{goalTodos.length}</span>
                 </div>
-              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 {goalTodos.map((todo) => (
                   <TodoItem
